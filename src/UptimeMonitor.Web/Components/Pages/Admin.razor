@@ -1,0 +1,270 @@
+@page "/admin"
+@attribute [Authorize]
+@rendermode InteractiveServer
+@implements IDisposable
+@inject MonitorService Monitors
+
+<PageTitle>@L["Admin_Title"] · @L["AppName"]</PageTitle>
+
+<h1>@L["Admin_Title"]</h1>
+
+<div class="admin-grid">
+    <section class="panel">
+        @if (monitors.Count == 0)
+        {
+            <p class="muted">@L["Admin_Empty"]</p>
+        }
+        else
+        {
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>@L["Col_Monitor"]</th>
+                            <th>@L["Col_Status"]</th>
+                            <th>@L["Col_Interval"]</th>
+                            <th>@L["Latency"]</th>
+                            <th>@L["Col_Actions"]</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var monitor in monitors)
+                        {
+                            <tr @key="monitor.Id" class="@(monitor.Id == selectedId ? "selected" : string.Empty)">
+                                <td>
+                                    <strong>@monitor.Name</strong>
+                                    <div class="muted url">@monitor.Url</div>
+                                </td>
+                                <td><StatusBadge Status="monitor.Status" /></td>
+                                <td>@L["Unit_Seconds", monitor.IntervalSeconds]</td>
+                                <td>@(monitor.LastLatencyMs is { } latency ? L["Unit_Milliseconds", latency] : "—")</td>
+                                <td class="actions">
+                                    <button type="button" class="button" @onclick="() => ShowDetailsAsync(monitor.Id)">@L["Action_Details"]</button>
+                                    <button type="button" class="button" @onclick="() => StartEdit(monitor)">@L["Action_Edit"]</button>
+                                    <button type="button" class="button" @onclick="() => TogglePauseAsync(monitor)">
+                                        @(monitor.IsPaused ? L["Action_Resume"] : L["Action_Pause"])
+                                    </button>
+                                    @if (pendingDeleteId == monitor.Id)
+                                    {
+                                        <button type="button" class="button button-danger" @onclick="() => DeleteAsync(monitor.Id)">@L["Action_ConfirmDelete"]</button>
+                                        <button type="button" class="button" @onclick="() => pendingDeleteId = null">@L["Action_Cancel"]</button>
+                                    }
+                                    else
+                                    {
+                                        <button type="button" class="button" @onclick="() => pendingDeleteId = monitor.Id">@L["Action_Delete"]</button>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </section>
+
+    <section class="panel">
+        <h2>@(editingId is null ? L["Admin_Add"] : L["Admin_Edit"])</h2>
+        <EditForm Model="form" OnValidSubmit="SaveAsync" class="monitor-form">
+            <DataAnnotationsValidator />
+            <label>
+                @L["Field_Name"]
+                <InputText @bind-Value="form.Name" />
+                <ValidationMessage For="() => form.Name" />
+            </label>
+            <label>
+                @L["Field_Url"]
+                <InputText @bind-Value="form.Url" placeholder="https://example.com" />
+                <ValidationMessage For="() => form.Url" />
+            </label>
+            <label>
+                @L["Field_Interval"]
+                <InputNumber @bind-Value="form.IntervalSeconds" />
+                <ValidationMessage For="() => form.IntervalSeconds" />
+            </label>
+            <label>
+                @L["Field_Timeout"]
+                <InputNumber @bind-Value="form.TimeoutSeconds" />
+                <ValidationMessage For="() => form.TimeoutSeconds" />
+            </label>
+            <label>
+                @L["Field_ExpectedStatus"]
+                <InputNumber @bind-Value="form.ExpectedStatusCode" />
+                <ValidationMessage For="() => form.ExpectedStatusCode" />
+            </label>
+            <div class="form-actions">
+                <button type="submit" class="button button-primary">@L["Action_Save"]</button>
+                @if (editingId is not null)
+                {
+                    <button type="button" class="button" @onclick="ResetForm">@L["Action_Cancel"]</button>
+                }
+            </div>
+        </EditForm>
+    </section>
+</div>
+
+@if (selectedId is not null)
+{
+    <section class="panel details">
+        <div class="panel-heading">
+            <h2>@L["Details_Title"] · @monitors.FirstOrDefault(monitor => monitor.Id == selectedId)?.Name</h2>
+            <button type="button" class="button" @onclick="CloseDetails">@L["Action_Close"]</button>
+        </div>
+
+        @if (checks.Count == 0)
+        {
+            <p class="muted">@L["Details_Empty"]</p>
+        }
+        else
+        {
+            <LatencyChart Checks="checks" />
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>@L["Col_Time"]</th>
+                            <th>@L["Col_Result"]</th>
+                            <th>@L["Col_StatusCode"]</th>
+                            <th>@L["Latency"]</th>
+                            <th>@L["Col_Error"]</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var check in checks.Take(TableRowCount))
+                        {
+                            <tr @key="check.Id">
+                                <td>@Display.Utc(check.CheckedAt)</td>
+                                <td><StatusBadge Status="check.IsUp ? MonitorStatus.Up : MonitorStatus.Down" /></td>
+                                <td>@(check.StatusCode?.ToString() ?? "—")</td>
+                                <td>@L["Unit_Milliseconds", check.LatencyMs]</td>
+                                <td>@(check.Error ?? "—")</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </section>
+}
+
+@code {
+    private const int ChartPointCount = 50;
+    private const int TableRowCount = 15;
+    private static readonly TimeSpan RefreshInterval = TimeSpan.FromSeconds(10);
+
+    private readonly CancellationTokenSource disposal = new();
+    private List<EndpointMonitor> monitors = [];
+    private List<CheckResult> checks = [];
+    private MonitorInput form = new();
+    private int? editingId;
+    private int? selectedId;
+    private int? pendingDeleteId;
+
+    protected override Task OnInitializedAsync() => LoadAsync();
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender)
+        {
+            _ = RefreshLoopAsync();
+        }
+    }
+
+    public void Dispose()
+    {
+        disposal.Cancel();
+        disposal.Dispose();
+    }
+
+    private async Task RefreshLoopAsync()
+    {
+        using var timer = new PeriodicTimer(RefreshInterval);
+
+        try
+        {
+            while (await timer.WaitForNextTickAsync(disposal.Token))
+            {
+                await InvokeAsync(async () =>
+                {
+                    await LoadAsync();
+                    StateHasChanged();
+                });
+            }
+        }
+        catch (OperationCanceledException)
+        {
+        }
+    }
+
+    private async Task LoadAsync()
+    {
+        monitors = await Monitors.ListAsync();
+
+        if (selectedId is { } id)
+        {
+            checks = await Monitors.RecentChecksAsync(id, ChartPointCount);
+        }
+    }
+
+    private async Task SaveAsync()
+    {
+        if (editingId is { } id)
+        {
+            await Monitors.UpdateAsync(id, form);
+        }
+        else
+        {
+            await Monitors.CreateAsync(form);
+        }
+
+        ResetForm();
+        await LoadAsync();
+    }
+
+    private void StartEdit(EndpointMonitor monitor)
+    {
+        editingId = monitor.Id;
+        form = MonitorInput.From(monitor);
+    }
+
+    private void ResetForm()
+    {
+        editingId = null;
+        form = new MonitorInput();
+    }
+
+    private async Task TogglePauseAsync(EndpointMonitor monitor)
+    {
+        await Monitors.SetPausedAsync(monitor.Id, !monitor.IsPaused);
+        await LoadAsync();
+    }
+
+    private async Task DeleteAsync(int id)
+    {
+        await Monitors.DeleteAsync(id);
+        pendingDeleteId = null;
+
+        if (selectedId == id)
+        {
+            CloseDetails();
+        }
+
+        if (editingId == id)
+        {
+            ResetForm();
+        }
+
+        await LoadAsync();
+    }
+
+    private async Task ShowDetailsAsync(int id)
+    {
+        selectedId = id;
+        await LoadAsync();
+    }
+
+    private void CloseDetails()
+    {
+        selectedId = null;
+        checks = [];
+    }
+}

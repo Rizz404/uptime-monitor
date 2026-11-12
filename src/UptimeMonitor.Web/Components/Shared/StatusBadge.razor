@@ -1,0 +1,6 @@
+<span class="badge badge-@Status.ToString().ToLowerInvariant()">@L[$"Status_{Status}"]</span>
+
+@code {
+    [Parameter, EditorRequired]
+    public MonitorStatus Status { get; set; }
+}

@@ -1,0 +1,96 @@
+@page "/"
+@inject StatusQueries Queries
+
+<PageTitle>@L["Status_Title"] · @L["AppName"]</PageTitle>
+<HeadContent>
+    <meta http-equiv="refresh" content="30" />
+</HeadContent>
+
+<h1>@L["Status_Title"]</h1>
+
+@if (overview.Monitors.Count == 0)
+{
+    <p class="banner banner-neutral">@L["Status_Empty"]</p>
+}
+else if (overview.DownCount == 0)
+{
+    <p class="banner banner-up">@L["Status_AllUp"]</p>
+}
+else
+{
+    <p class="banner banner-down">@L["Status_SomeDown", overview.DownCount, overview.Monitors.Count]</p>
+}
+
+<section class="monitor-list">
+    @foreach (var monitor in overview.Monitors)
+    {
+        <article class="monitor-card">
+            <div class="monitor-heading">
+                <div>
+                    <h2>@monitor.Name</h2>
+                    <a class="muted" href="@monitor.Url" target="_blank" rel="noopener noreferrer">@monitor.Url</a>
+                </div>
+                <StatusBadge Status="monitor.Status" />
+            </div>
+            <dl class="metrics">
+                <div>
+                    <dt>@L["Uptime_24Hours"]</dt>
+                    <dd class="@Display.UptimeClass(monitor.Uptime24Hours)">@Display.Percentage(monitor.Uptime24Hours)</dd>
+                </div>
+                <div>
+                    <dt>@L["Uptime_7Days"]</dt>
+                    <dd class="@Display.UptimeClass(monitor.Uptime7Days)">@Display.Percentage(monitor.Uptime7Days)</dd>
+                </div>
+                <div>
+                    <dt>@L["Uptime_30Days"]</dt>
+                    <dd class="@Display.UptimeClass(monitor.Uptime30Days)">@Display.Percentage(monitor.Uptime30Days)</dd>
+                </div>
+                <div>
+                    <dt>@L["Latency"]</dt>
+                    <dd>@(monitor.LastLatencyMs is { } latency ? L["Unit_Milliseconds", latency] : "—")</dd>
+                </div>
+                <div>
+                    <dt>@L["LastChecked"]</dt>
+                    <dd>@(monitor.LastCheckedAt is { } checkedAt ? Display.Utc(checkedAt) : L["Never"])</dd>
+                </div>
+            </dl>
+        </article>
+    }
+</section>
+
+<h2 class="section-title">@L["Incidents_Title"]</h2>
+
+@if (overview.Incidents.Count == 0)
+{
+    <p class="muted">@L["Incidents_Empty"]</p>
+}
+else
+{
+    <ul class="incident-list">
+        @foreach (var incident in overview.Incidents)
+        {
+            <li class="incident @(incident.ResolvedAt is null ? "incident-open" : string.Empty)">
+                <div class="incident-heading">
+                    <strong>@incident.MonitorName</strong>
+                    <span class="badge @(incident.ResolvedAt is null ? "badge-down" : "badge-up")">
+                        @(incident.ResolvedAt is null ? L["Incident_Ongoing"] : L["Incident_Resolved"])
+                    </span>
+                </div>
+                <p>@incident.Cause</p>
+                <p class="muted">
+                    @L["Incident_Started"]: @Display.Utc(incident.StartedAt)
+                    @if (incident.ResolvedAt is { } resolvedAt)
+                    {
+                        <span> · @L["Incident_Resolved"]: @Display.Utc(resolvedAt)</span>
+                    }
+                </p>
+            </li>
+        }
+    </ul>
+}
+
+@code {
+    private StatusOverview overview = new([], []);
+
+    protected override async Task OnInitializedAsync() => overview = await Queries.GetOverviewAsync();
+}

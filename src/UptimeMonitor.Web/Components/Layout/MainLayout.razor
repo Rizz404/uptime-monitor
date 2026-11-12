@@ -1,0 +1,48 @@
+﻿@inherits LayoutComponentBase
+@inject NavigationManager Navigation
+
+<header class="site-header" data-enhance-nav="false">
+    <a class="brand" href="/">
+        <span class="brand-mark" aria-hidden="true"></span>
+        @L["AppName"]
+    </a>
+    <nav class="site-nav">
+        <NavLink href="/" Match="NavLinkMatch.All">@L["Nav_Status"]</NavLink>
+        <AuthorizeView>
+            <Authorized>
+                <NavLink href="/admin">@L["Nav_Dashboard"]</NavLink>
+                <form method="post" action="/auth/logout">
+                    <button type="submit" class="link-button">@L["Nav_Logout"]</button>
+                </form>
+            </Authorized>
+            <NotAuthorized>
+                <NavLink href="/login">@L["Nav_Login"]</NavLink>
+            </NotAuthorized>
+        </AuthorizeView>
+        <span class="language-switch">
+            <a href="@CultureUrl("en")" class="@CultureClass("en")">EN</a>
+            <a href="@CultureUrl("id")" class="@CultureClass("id")">ID</a>
+        </span>
+    </nav>
+</header>
+
+<main class="site-main">
+    @Body
+</main>
+
+<div id="blazor-error-ui" data-nosnippet>
+    @L["Error_Unhandled"]
+    <a href="." class="reload">@L["Error_Reload"]</a>
+    <span class="dismiss">🗙</span>
+</div>
+
+@code {
+    private string CultureUrl(string culture)
+    {
+        var returnUrl = "/" + Navigation.ToBaseRelativePath(Navigation.Uri);
+        return $"/culture/{culture}?returnUrl={Uri.EscapeDataString(returnUrl)}";
+    }
+
+    private static string CultureClass(string culture) =>
+        CultureInfo.CurrentUICulture.TwoLetterISOLanguageName == culture ? "active" : string.Empty;
+}

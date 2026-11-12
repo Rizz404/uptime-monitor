@@ -1,0 +1,44 @@
+@if (points.Count > 1)
+{
+    <svg class="latency-chart" viewBox="0 0 @Width @Height" preserveAspectRatio="none" role="img" aria-label="@L["Details_Chart", points.Count]">
+        <polyline points="@polyline" />
+        @foreach (var point in points.Where(point => !point.IsUp))
+        {
+            <circle cx="@Number(point.X)" cy="@Number(point.Y)" r="4" />
+        }
+    </svg>
+    <p class="muted">@L["Details_Chart", points.Count] · max @L["Unit_Milliseconds", maxLatency]</p>
+}
+
+@code {
+    private const double Width = 600;
+    private const double Height = 120;
+    private const double Padding = 8;
+
+    private List<ChartPoint> points = [];
+    private string polyline = string.Empty;
+    private int maxLatency;
+
+    [Parameter, EditorRequired]
+    public IReadOnlyList<CheckResult> Checks { get; set; } = [];
+
+    protected override void OnParametersSet()
+    {
+        var ordered = Checks.OrderBy(check => check.CheckedAt).ToList();
+        maxLatency = ordered.Count == 0 ? 0 : Math.Max(1, ordered.Max(check => check.LatencyMs));
+        var step = ordered.Count > 1 ? (Width - Padding * 2) / (ordered.Count - 1) : 0;
+
+        points = ordered
+            .Select((check, index) => new ChartPoint(
+                Padding + index * step,
+                Height - Padding - check.LatencyMs / (double)maxLatency * (Height - Padding * 2),
+                check.IsUp))
+            .ToList();
+
+        polyline = string.Join(' ', points.Select(point => $"{Number(point.X)},{Number(point.Y)}"));
+    }
+
+    private static string Number(double value) => value.ToString("0.#", CultureInfo.InvariantCulture);
+
+    private record ChartPoint(double X, double Y, bool IsUp);
+}

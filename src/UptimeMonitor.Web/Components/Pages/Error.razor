@@ -1,0 +1,21 @@
+﻿@page "/Error"
+@using System.Diagnostics
+
+<PageTitle>@L["Error_Title"] · @L["AppName"]</PageTitle>
+
+<h1>@L["Error_Title"]</h1>
+<p class="muted">@L["Error_Text"]</p>
+
+@if (requestId is not null)
+{
+    <p class="muted">Request ID: <code>@requestId</code></p>
+}
+
+@code {
+    private string? requestId;
+
+    [CascadingParameter]
+    private HttpContext? HttpContext { get; set; }
+
+    protected override void OnInitialized() => requestId = Activity.Current?.Id ?? HttpContext?.TraceIdentifier;
+}

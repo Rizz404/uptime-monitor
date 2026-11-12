@@ -1,0 +1,33 @@
+@page "/login"
+
+<PageTitle>@L["Login_Title"] · @L["AppName"]</PageTitle>
+
+<form method="post" action="/auth/login" class="panel login-form">
+    <AntiforgeryToken />
+    <input type="hidden" name="returnUrl" value="@ReturnUrl" />
+
+    <h1>@L["Login_Title"]</h1>
+
+    @if (Failed)
+    {
+        <p class="banner banner-down">@L["Login_Failed"]</p>
+    }
+
+    <label>
+        @L["Login_Username"]
+        <input type="text" name="username" autocomplete="username" required autofocus />
+    </label>
+    <label>
+        @L["Login_Password"]
+        <input type="password" name="password" autocomplete="current-password" required />
+    </label>
+    <button type="submit" class="button button-primary">@L["Login_Submit"]</button>
+</form>
+
+@code {
+    [SupplyParameterFromQuery]
+    private string? ReturnUrl { get; set; }
+
+    [SupplyParameterFromQuery]
+    private bool Failed { get; set; }
+}
