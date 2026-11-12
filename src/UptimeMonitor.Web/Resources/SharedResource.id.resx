@@ -1,0 +1,228 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="AppName" xml:space="preserve">
+    <value>Uptime Monitor</value>
+  </data>
+  <data name="Nav_Status" xml:space="preserve">
+    <value>Status</value>
+  </data>
+  <data name="Nav_Dashboard" xml:space="preserve">
+    <value>Dasbor</value>
+  </data>
+  <data name="Nav_Login" xml:space="preserve">
+    <value>Masuk</value>
+  </data>
+  <data name="Nav_Logout" xml:space="preserve">
+    <value>Keluar</value>
+  </data>
+  <data name="Status_Title" xml:space="preserve">
+    <value>Status sistem</value>
+  </data>
+  <data name="Status_AllUp" xml:space="preserve">
+    <value>Semua sistem beroperasi normal</value>
+  </data>
+  <data name="Status_SomeDown" xml:space="preserve">
+    <value>{0} dari {1} layanan sedang bermasalah</value>
+  </data>
+  <data name="Status_Empty" xml:space="preserve">
+    <value>Belum ada monitor yang ditambahkan.</value>
+  </data>
+  <data name="Status_Up" xml:space="preserve">
+    <value>Beroperasi</value>
+  </data>
+  <data name="Status_Down" xml:space="preserve">
+    <value>Gangguan</value>
+  </data>
+  <data name="Status_Pending" xml:space="preserve">
+    <value>Menunggu</value>
+  </data>
+  <data name="Status_Paused" xml:space="preserve">
+    <value>Dijeda</value>
+  </data>
+  <data name="Uptime_Title" xml:space="preserve">
+    <value>Uptime</value>
+  </data>
+  <data name="Uptime_24Hours" xml:space="preserve">
+    <value>24 jam</value>
+  </data>
+  <data name="Uptime_7Days" xml:space="preserve">
+    <value>7 hari</value>
+  </data>
+  <data name="Uptime_30Days" xml:space="preserve">
+    <value>30 hari</value>
+  </data>
+  <data name="Latency" xml:space="preserve">
+    <value>Latensi</value>
+  </data>
+  <data name="LastChecked" xml:space="preserve">
+    <value>Terakhir dicek</value>
+  </data>
+  <data name="Never" xml:space="preserve">
+    <value>Belum pernah</value>
+  </data>
+  <data name="Incidents_Title" xml:space="preserve">
+    <value>Insiden terbaru</value>
+  </data>
+  <data name="Incidents_Empty" xml:space="preserve">
+    <value>Belum ada insiden tercatat.</value>
+  </data>
+  <data name="Incident_Ongoing" xml:space="preserve">
+    <value>Masih berlangsung</value>
+  </data>
+  <data name="Incident_Resolved" xml:space="preserve">
+    <value>Selesai</value>
+  </data>
+  <data name="Incident_Started" xml:space="preserve">
+    <value>Mulai</value>
+  </data>
+  <data name="Login_Title" xml:space="preserve">
+    <value>Masuk sebagai admin</value>
+  </data>
+  <data name="Login_Username" xml:space="preserve">
+    <value>Nama pengguna</value>
+  </data>
+  <data name="Login_Password" xml:space="preserve">
+    <value>Kata sandi</value>
+  </data>
+  <data name="Login_Submit" xml:space="preserve">
+    <value>Masuk</value>
+  </data>
+  <data name="Login_Failed" xml:space="preserve">
+    <value>Nama pengguna atau kata sandi salah.</value>
+  </data>
+  <data name="Admin_Title" xml:space="preserve">
+    <value>Monitor</value>
+  </data>
+  <data name="Admin_Add" xml:space="preserve">
+    <value>Tambah monitor</value>
+  </data>
+  <data name="Admin_Edit" xml:space="preserve">
+    <value>Ubah monitor</value>
+  </data>
+  <data name="Admin_Empty" xml:space="preserve">
+    <value>Belum ada monitor. Tambahkan yang pertama lewat formulir.</value>
+  </data>
+  <data name="Field_Name" xml:space="preserve">
+    <value>Nama</value>
+  </data>
+  <data name="Field_Url" xml:space="preserve">
+    <value>URL</value>
+  </data>
+  <data name="Field_Interval" xml:space="preserve">
+    <value>Interval cek (detik)</value>
+  </data>
+  <data name="Field_Timeout" xml:space="preserve">
+    <value>Batas waktu (detik)</value>
+  </data>
+  <data name="Field_ExpectedStatus" xml:space="preserve">
+    <value>Kode status yang diharapkan</value>
+  </data>
+  <data name="Action_Save" xml:space="preserve">
+    <value>Simpan</value>
+  </data>
+  <data name="Action_Cancel" xml:space="preserve">
+    <value>Batal</value>
+  </data>
+  <data name="Action_Edit" xml:space="preserve">
+    <value>Ubah</value>
+  </data>
+  <data name="Action_Delete" xml:space="preserve">
+    <value>Hapus</value>
+  </data>
+  <data name="Action_ConfirmDelete" xml:space="preserve">
+    <value>Yakin hapus</value>
+  </data>
+  <data name="Action_Pause" xml:space="preserve">
+    <value>Jeda</value>
+  </data>
+  <data name="Action_Resume" xml:space="preserve">
+    <value>Lanjutkan</value>
+  </data>
+  <data name="Action_Details" xml:space="preserve">
+    <value>Detail</value>
+  </data>
+  <data name="Action_Close" xml:space="preserve">
+    <value>Tutup</value>
+  </data>
+  <data name="Details_Title" xml:space="preserve">
+    <value>Pengecekan terbaru</value>
+  </data>
+  <data name="Details_Empty" xml:space="preserve">
+    <value>Belum ada pengecekan tercatat.</value>
+  </data>
+  <data name="Details_Chart" xml:space="preserve">
+    <value>Latensi {0} pengecekan terakhir</value>
+  </data>
+  <data name="Col_Monitor" xml:space="preserve">
+    <value>Monitor</value>
+  </data>
+  <data name="Col_Status" xml:space="preserve">
+    <value>Status</value>
+  </data>
+  <data name="Col_Interval" xml:space="preserve">
+    <value>Interval</value>
+  </data>
+  <data name="Col_Actions" xml:space="preserve">
+    <value>Aksi</value>
+  </data>
+  <data name="Col_Time" xml:space="preserve">
+    <value>Waktu</value>
+  </data>
+  <data name="Col_Result" xml:space="preserve">
+    <value>Hasil</value>
+  </data>
+  <data name="Col_StatusCode" xml:space="preserve">
+    <value>Kode status</value>
+  </data>
+  <data name="Col_Error" xml:space="preserve">
+    <value>Galat</value>
+  </data>
+  <data name="Unit_Seconds" xml:space="preserve">
+    <value>{0} dtk</value>
+  </data>
+  <data name="Unit_Milliseconds" xml:space="preserve">
+    <value>{0} md</value>
+  </data>
+  <data name="Validation_Required" xml:space="preserve">
+    <value>Kolom ini wajib diisi.</value>
+  </data>
+  <data name="Validation_Range" xml:space="preserve">
+    <value>Harus antara {1} dan {2}.</value>
+  </data>
+  <data name="Validation_MaxLength" xml:space="preserve">
+    <value>Maksimal {1} karakter.</value>
+  </data>
+  <data name="Validation_Url" xml:space="preserve">
+    <value>Harus berupa URL http atau https yang valid.</value>
+  </data>
+  <data name="NotFound_Title" xml:space="preserve">
+    <value>Halaman tidak ditemukan</value>
+  </data>
+  <data name="NotFound_Text" xml:space="preserve">
+    <value>Halaman yang kamu cari tidak ada.</value>
+  </data>
+  <data name="Error_Title" xml:space="preserve">
+    <value>Terjadi kesalahan</value>
+  </data>
+  <data name="Error_Text" xml:space="preserve">
+    <value>Terjadi kesalahan tak terduga saat memproses permintaanmu.</value>
+  </data>
+  <data name="Error_Unhandled" xml:space="preserve">
+    <value>Terjadi kesalahan yang tidak tertangani.</value>
+  </data>
+  <data name="Error_Reload" xml:space="preserve">
+    <value>Muat ulang</value>
+  </data>
+</root>
