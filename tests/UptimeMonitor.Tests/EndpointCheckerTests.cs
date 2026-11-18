@@ -5,11 +5,13 @@ namespace UptimeMonitor.Tests;
 
 public class EndpointCheckerTests
 {
+    // ? xunit membuat instance class baru untuk SETIAP test, jadi handler dan monitor ini selalu bersih
     private readonly StubHttpHandler handler = new();
     private readonly EndpointMonitor monitor = new() { Name = "Example", Url = "https://example.test/" };
 
     private EndpointChecker CreateChecker() => new(new HttpClient(handler));
 
+    // * Pola tiap test: siapkan (handler), jalankan (CheckAsync), lalu periksa (Assert)
     [Fact]
     public async Task Expected_status_code_is_reported_as_up()
     {
@@ -34,6 +36,7 @@ public class EndpointCheckerTests
         Assert.Equal("Expected status 200 but received 503", outcome.Error);
     }
 
+    // * Membuktikan "Up" mengikuti ExpectedStatusCode, bukan angka 200 yang dikunci
     [Fact]
     public async Task Custom_expected_status_code_is_respected()
     {
@@ -49,6 +52,7 @@ public class EndpointCheckerTests
     public async Task Slow_endpoint_is_reported_as_timed_out()
     {
         monitor.TimeoutSeconds = 1;
+        // ? Delay tanpa batas yang hanya berhenti saat dibatalkan, jadi yang memutus adalah timeout 1 detik milik checker
         handler.Respond = async (_, cancellationToken) =>
         {
             await Task.Delay(Timeout.Infinite, cancellationToken);
@@ -62,6 +66,7 @@ public class EndpointCheckerTests
         Assert.Equal("Timed out after 1 seconds", outcome.Error);
     }
 
+    // * Handler melempar HttpRequestException untuk meniru jaringan putus
     [Fact]
     public async Task Connection_failure_is_reported_as_down()
     {
