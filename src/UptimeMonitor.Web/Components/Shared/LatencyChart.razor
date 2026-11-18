@@ -1,5 +1,9 @@
+@* * Grafik latency yang digambar sendiri dengan SVG, tanpa library. Garis menghubungkan tiap pengecekan, dan titik merah menandai yang gagal *@
+@* ? Grafik hanya dibuat bila ada lebih dari satu titik, karena satu titik tidak bisa menjadi garis *@
 @if (points.Count > 1)
 {
+    @* ? viewBox = sistem koordinat internal 600x120 yang diskalakan mengikuti lebar elemen; preserveAspectRatio="none" boleh meregangkannya *@
+    @* ? role dan aria-label memberi pembaca layar deskripsi singkat grafik *@
     <svg class="latency-chart" viewBox="0 0 @Width @Height" preserveAspectRatio="none" role="img" aria-label="@L["Details_Chart", points.Count]">
         <polyline points="@polyline" />
         @foreach (var point in points.Where(point => !point.IsUp))
@@ -13,6 +17,7 @@
 @code {
     private const double Width = 600;
     private const double Height = 120;
+    // * Jarak kosong di tepi supaya garis dan titik tidak terpotong
     private const double Padding = 8;
 
     private List<ChartPoint> points = [];
@@ -22,12 +27,17 @@
     [Parameter, EditorRequired]
     public IReadOnlyList<CheckResult> Checks { get; set; } = [];
 
+    // * Dijalankan tiap kali Checks berubah (misalnya saat data diperbarui), jadi grafik ikut terbarui
     protected override void OnParametersSet()
     {
+        // ? Data dari service terbaru dulu, sedangkan grafik harus dari lama ke baru, jadi diurutkan naik
         var ordered = Checks.OrderBy(check => check.CheckedAt).ToList();
+        // ! Minimal 1 agar tidak terjadi pembagian dengan nol bila semua latency 0
         maxLatency = ordered.Count == 0 ? 0 : Math.Max(1, ordered.Max(check => check.LatencyMs));
+        // * Jarak mendatar antartitik dibagi rata sepanjang lebar grafik
         var step = ordered.Count > 1 ? (Width - Padding * 2) / (ordered.Count - 1) : 0;
 
+        // ? Y dibalik karena di SVG nilai Y bertambah ke bawah: latency tinggi harus berada di atas (Y kecil)
         points = ordered
             .Select((check, index) => new ChartPoint(
                 Padding + index * step,
@@ -38,7 +48,9 @@
         polyline = string.Join(' ', points.Select(point => $"{Number(point.X)},{Number(point.Y)}"));
     }
 
+    // ! InvariantCulture wajib: dengan bahasa Indonesia, 1.5 akan tertulis "1,5" dan koordinat SVG menjadi rusak
     private static string Number(double value) => value.ToString("0.#", CultureInfo.InvariantCulture);
 
+    // ? Record bersarang yang hanya dipakai di komponen ini
     private record ChartPoint(double X, double Y, bool IsUp);
 }

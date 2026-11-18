@@ -152,6 +152,7 @@ code {
     padding: 2rem clamp(1rem, 4vw, 2.5rem) 4rem;
 }
 
+/* * Spanduk ringkasan di Status page: satu class dasar, dan variannya (-up, -down, -neutral) hanya mengganti warna */
 .banner {
     margin: 0 0 1.5rem;
     padding: 0.9rem 1.1rem;
@@ -174,6 +175,7 @@ code {
     color: var(--muted);
 }
 
+/* * Lencana StatusBadge: class badge-up/down/pending/paused dibuat dari nama status di komponennya */
 .badge {
     display: inline-block;
     padding: 0.15rem 0.65rem;
@@ -199,6 +201,7 @@ code {
     color: var(--muted);
 }
 
+/* * Satu tampilan kartu dipakai bersama oleh tiga class (dipisah koma) supaya konsisten */
 .panel,
 .monitor-card,
 .incident {
@@ -222,10 +225,12 @@ code {
     gap: 1rem;
 }
 
+/* ? overflow-wrap: anywhere mematahkan URL panjang agar tidak melebihi kartu */
 .monitor-heading a {
     overflow-wrap: anywhere;
 }
 
+/* * Grid responsif: kolom otomatis menyesuaikan lebar (minimal 130px), jumlah kolom berkurang di layar sempit tanpa media query */
 .metrics {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
@@ -244,6 +249,7 @@ code {
     font-weight: 600;
 }
 
+/* * Warna persentase uptime, dipilih oleh Display.UptimeClass */
 .uptime-good {
     color: var(--up);
 }
@@ -282,6 +288,7 @@ code {
     border-color: var(--down);
 }
 
+/* * Halaman admin: dua kolom (tabel lebih lebar, 2 banding 1) dan berubah menjadi satu kolom di layar di bawah 900px */
 .admin-grid {
     display: grid;
     grid-template-columns: minmax(0, 2fr) minmax(260px, 1fr);
@@ -299,6 +306,7 @@ code {
     margin-top: 1rem;
 }
 
+/* ? Pembungkus tabel: di layar sempit tabel bisa digeser mendatar, halamannya tidak ikut melebar */
 .table-wrap {
     overflow-x: auto;
 }
@@ -338,6 +346,7 @@ tr.selected {
     gap: 0.35rem;
 }
 
+/* * Tombol: .button adalah gaya dasar, .button-primary dan .button-danger ditambahkan di atasnya untuk aksi utama dan aksi hapus */
 .button {
     padding: 0.35rem 0.75rem;
     border: 1px solid var(--border);
@@ -400,6 +409,7 @@ input {
     font: inherit;
 }
 
+/* ? focus-visible: garis fokus hanya muncul saat memakai keyboard, tidak saat klik mouse */
 input:focus-visible,
 .button:focus-visible,
 a:focus-visible {
@@ -407,6 +417,7 @@ a:focus-visible {
     outline-offset: 2px;
 }
 
+/* ! Class "invalid" dan "validation-message" ditambahkan otomatis oleh Blazor (InputText dan ValidationMessage) saat validasi gagal */
 input.invalid {
     border-color: var(--down);
 }
@@ -421,6 +432,7 @@ input.invalid {
     gap: 0.5rem;
 }
 
+/* * Grafik LatencyChart: SVG dibuat selebar kartu dengan tinggi tetap 120px */
 .latency-chart {
     width: 100%;
     height: 120px;
@@ -434,6 +446,7 @@ input.invalid {
     fill: none;
     stroke: var(--accent);
     stroke-width: 2;
+    /* ! Ketebalan garis tetap 2px walau SVG diregangkan (preserveAspectRatio="none"), kalau tidak garis jadi gepeng */
     vector-effect: non-scaling-stroke;
 }
 

@@ -1,13 +1,18 @@
 @page "/admin"
+@* * [Authorize] melindungi halaman ini: pengguna yang belum login dialihkan ke /login oleh Routes.razor *@
 @attribute [Authorize]
+@* ! Hanya halaman ini yang interaktif; tombol dan form baru berfungsi karena mode InteractiveServer *@
 @rendermode InteractiveServer
+@* ? IDisposable membuat method Dispose dipanggil saat pengguna meninggalkan halaman *@
 @implements IDisposable
+@* ? Memakai MonitorService langsung (bukan lewat API HTTP), karena halaman ini berjalan di server yang sama *@
 @inject MonitorService Monitors
 
 <PageTitle>@L["Admin_Title"] · @L["AppName"]</PageTitle>
 
 <h1>@L["Admin_Title"]</h1>
 
+@* * Tata letak dua kolom: tabel monitor di kiri dan form tambah/ubah di kanan *@
 <div class="admin-grid">
     <section class="panel">
         @if (monitors.Count == 0)
@@ -30,6 +35,7 @@
                     <tbody>
                         @foreach (var monitor in monitors)
                         {
+                            @* ? @key membuat Blazor mengenali tiap baris lewat Id, jadi baris tidak tertukar saat daftar berubah *@
                             <tr @key="monitor.Id" class="@(monitor.Id == selectedId ? "selected" : string.Empty)">
                                 <td>
                                     <strong>@monitor.Name</strong>
@@ -39,11 +45,13 @@
                                 <td>@L["Unit_Seconds", monitor.IntervalSeconds]</td>
                                 <td>@(monitor.LastLatencyMs is { } latency ? L["Unit_Milliseconds", latency] : "—")</td>
                                 <td class="actions">
+                                    @* * @onclick memanggil method C# saat tombol diklik; lambda "() =>" dipakai agar monitor yang dipilih ikut dikirim *@
                                     <button type="button" class="button" @onclick="() => ShowDetailsAsync(monitor.Id)">@L["Action_Details"]</button>
                                     <button type="button" class="button" @onclick="() => StartEdit(monitor)">@L["Action_Edit"]</button>
                                     <button type="button" class="button" @onclick="() => TogglePauseAsync(monitor)">
                                         @(monitor.IsPaused ? L["Action_Resume"] : L["Action_Pause"])
                                     </button>
+                                    @* * Hapus dua langkah tanpa dialog: klik pertama mengubah tombol menjadi "konfirmasi" lewat pendingDeleteId *@
                                     @if (pendingDeleteId == monitor.Id)
                                     {
                                         <button type="button" class="button button-danger" @onclick="() => DeleteAsync(monitor.Id)">@L["Action_ConfirmDelete"]</button>
@@ -63,12 +71,17 @@
     </section>
 
     <section class="panel">
+        @* * Satu form untuk dua keperluan: judulnya "tambah" bila editingId kosong, dan "ubah" bila sedang mengedit *@
         <h2>@(editingId is null ? L["Admin_Add"] : L["Admin_Edit"])</h2>
+        @* * OnValidSubmit hanya dipanggil bila semua validasi lolos *@
         <EditForm Model="form" OnValidSubmit="SaveAsync" class="monitor-form">
+            @* ! Tanpa DataAnnotationsValidator, atribut validasi di MonitorInput (Langkah 6) tidak dijalankan di form ini *@
             <DataAnnotationsValidator />
             <label>
                 @L["Field_Name"]
+                @* ? @bind-Value = ikatan dua arah: isi kolom dan properti form saling memperbarui *@
                 <InputText @bind-Value="form.Name" />
+                @* ? ValidationMessage menampilkan pesan error milik satu properti, dalam bahasa yang dipilih *@
                 <ValidationMessage For="() => form.Name" />
             </label>
             <label>
@@ -102,6 +115,7 @@
     </section>
 </div>
 
+@* * Panel detail hanya muncul setelah satu monitor dipilih lewat tombol "Detail" *@
 @if (selectedId is not null)
 {
     <section class="panel details">
@@ -116,6 +130,7 @@
         }
         else
         {
+            @* * Grafik memakai 50 pengecekan terakhir, sedangkan tabel hanya menampilkan 15 baris teratas *@
             <LatencyChart Checks="checks" />
             <div class="table-wrap">
                 <table>
@@ -133,6 +148,7 @@
                         {
                             <tr @key="check.Id">
                                 <td>@Display.Utc(check.CheckedAt)</td>
+                                @* ? StatusBadge dipakai ulang; hasil Up/Down dari satu pengecekan dipetakan ke status lencana *@
                                 <td><StatusBadge Status="check.IsUp ? MonitorStatus.Up : MonitorStatus.Down" /></td>
                                 <td>@(check.StatusCode?.ToString() ?? "—")</td>
                                 <td>@L["Unit_Milliseconds", check.LatencyMs]</td>
@@ -151,7 +167,9 @@
     private const int TableRowCount = 15;
     private static readonly TimeSpan RefreshInterval = TimeSpan.FromSeconds(10);
 
+    // * Tombol pembatalan untuk loop penyegaran, dipicu saat halaman ditinggalkan
     private readonly CancellationTokenSource disposal = new();
+    // * State halaman: data yang ditampilkan dan pilihan pengguna saat ini (null = tidak ada yang dipilih)
     private List<EndpointMonitor> monitors = [];
     private List<CheckResult> checks = [];
     private MonitorInput form = new();
@@ -161,20 +179,24 @@
 
     protected override Task OnInitializedAsync() => LoadAsync();
 
+    // ? OnAfterRender tidak berjalan saat pra-render di server, jadi loop baru mulai setelah halaman benar-benar interaktif
     protected override void OnAfterRender(bool firstRender)
     {
         if (firstRender)
         {
+            // ? "_ =" = sengaja tidak ditunggu: loop berjalan di latar belakang selama halaman terbuka
             _ = RefreshLoopAsync();
         }
     }
 
+    // * Menghentikan loop penyegaran saat pengguna pindah halaman
     public void Dispose()
     {
         disposal.Cancel();
         disposal.Dispose();
     }
 
+    // * Memuat ulang data tiap 10 detik, sehingga status terbaru muncul tanpa perlu me-refresh halaman
     private async Task RefreshLoopAsync()
     {
         using var timer = new PeriodicTimer(RefreshInterval);
@@ -183,18 +205,22 @@
         {
             while (await timer.WaitForNextTickAsync(disposal.Token))
             {
+                // ! InvokeAsync memindahkan pekerjaan ke jalur yang aman bagi komponen, karena timer berjalan di thread lain
                 await InvokeAsync(async () =>
                 {
                     await LoadAsync();
+                    // * StateHasChanged memberi tahu Blazor bahwa data berubah dan tampilan perlu digambar ulang
                     StateHasChanged();
                 });
             }
         }
+        // ? Pembatalan saat halaman ditutup adalah hal normal, jadi dibiarkan kosong
         catch (OperationCanceledException)
         {
         }
     }
 
+    // * Satu pintu untuk memuat data; riwayat hanya dimuat bila panel detail sedang terbuka
     private async Task LoadAsync()
     {
         monitors = await Monitors.ListAsync();
@@ -205,6 +231,7 @@
         }
     }
 
+    // * Form yang sama dipakai untuk tambah dan ubah, dibedakan oleh editingId
     private async Task SaveAsync()
     {
         if (editingId is { } id)
@@ -220,6 +247,7 @@
         await LoadAsync();
     }
 
+    // * MonitorInput.From (Langkah 6) menyalin data monitor ke form untuk diedit
     private void StartEdit(EndpointMonitor monitor)
     {
         editingId = monitor.Id;
@@ -238,6 +266,7 @@
         await LoadAsync();
     }
 
+    // ! Setelah menghapus, state yang menunjuk monitor itu (detail terbuka, form edit) ikut dibersihkan agar tidak menampilkan data yang sudah hilang
     private async Task DeleteAsync(int id)
     {
         await Monitors.DeleteAsync(id);

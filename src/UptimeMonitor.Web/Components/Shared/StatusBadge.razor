@@ -1,6 +1,10 @@
+@* * Lencana status kecil yang dipakai ulang di beberapa halaman. Nama class CSS (badge-up, badge-down, ...) dibuat dari nama status *@
+@* ? Teksnya diambil dari resx lewat key yang dirangkai, misalnya Status_Up; key itu harus ada di kedua file resx *@
 <span class="badge badge-@Status.ToString().ToLowerInvariant()">@L[$"Status_{Status}"]</span>
 
 @code {
+    // * [Parameter] = nilai yang diberikan komponen induk lewat atribut, contohnya <StatusBadge Status="..." />
+    // ? EditorRequired membuat editor memberi peringatan bila atribut ini lupa diisi
     [Parameter, EditorRequired]
     public MonitorStatus Status { get; set; }
 }

@@ -1,13 +1,17 @@
+@* * @page = alamat halaman ini; "/" menjadikannya halaman depan yang bisa dilihat siapa saja *@
 @page "/"
 @inject StatusQueries Queries
 
+@* * PageTitle mengisi judul tab browser lewat HeadOutlet di App.razor *@
 <PageTitle>@L["Status_Title"] · @L["AppName"]</PageTitle>
+@* ! Halaman ini statis (tanpa @rendermode), jadi pembaruan otomatis dilakukan dengan meta refresh tiap 30 detik *@
 <HeadContent>
     <meta http-equiv="refresh" content="30" />
 </HeadContent>
 
 <h1>@L["Status_Title"]</h1>
 
+@* * Spanduk ringkasan punya tiga kemungkinan: belum ada monitor, semua normal, atau sebagian down *@
 @if (overview.Monitors.Count == 0)
 {
     <p class="banner banner-neutral">@L["Status_Empty"]</p>
@@ -18,20 +22,24 @@ else if (overview.DownCount == 0)
 }
 else
 {
+    @* ? Argumen setelah key mengisi placeholder {0} dan {1} di resx *@
     <p class="banner banner-down">@L["Status_SomeDown", overview.DownCount, overview.Monitors.Count]</p>
 }
 
 <section class="monitor-list">
+    @* * Satu kartu per monitor *@
     @foreach (var monitor in overview.Monitors)
     {
         <article class="monitor-card">
             <div class="monitor-heading">
                 <div>
                     <h2>@monitor.Name</h2>
+                    @* ! rel="noopener noreferrer" pada link tab baru mencegah situs tujuan mengakses halaman ini *@
                     <a class="muted" href="@monitor.Url" target="_blank" rel="noopener noreferrer">@monitor.Url</a>
                 </div>
                 <StatusBadge Status="monitor.Status" />
             </div>
+            @* ? <dl> = daftar pasangan label (dt) dan nilai (dd); warna uptime dipilih Display.UptimeClass *@
             <dl class="metrics">
                 <div>
                     <dt>@L["Uptime_24Hours"]</dt>
@@ -47,6 +55,7 @@ else
                 </div>
                 <div>
                     <dt>@L["Latency"]</dt>
+                    @* ? @( ... ) = ekspresi C# lengkap di dalam HTML, di sini dipakai untuk if-else satu baris *@
                     <dd>@(monitor.LastLatencyMs is { } latency ? L["Unit_Milliseconds", latency] : "—")</dd>
                 </div>
                 <div>
@@ -69,6 +78,7 @@ else
     <ul class="incident-list">
         @foreach (var incident in overview.Incidents)
         {
+            @* * Insiden yang belum selesai (ResolvedAt null) diberi class dan lencana merah *@
             <li class="incident @(incident.ResolvedAt is null ? "incident-open" : string.Empty)">
                 <div class="incident-heading">
                     <strong>@incident.MonitorName</strong>
@@ -89,8 +99,11 @@ else
     </ul>
 }
 
+@* * @code = bagian C# milik komponen ini *@
 @code {
+    // ? Diisi data kosong lebih dulu agar tampilan di atas tidak menemui null selagi data belum dimuat
     private StatusOverview overview = new([], []);
 
+    // * Dijalankan sekali saat halaman dibuat: data dimuat dari StatusQueries (Langkah 7)
     protected override async Task OnInitializedAsync() => overview = await Queries.GetOverviewAsync();
 }
