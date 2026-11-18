@@ -44,6 +44,7 @@ builder.Services.AddHttpClient<EndpointChecker>(client =>
     client.DefaultRequestHeaders.UserAgent.ParseAdd("UptimeMonitor/1.0"));
 // ? Scoped = satu instance per scope; scheduler membuat scope baru tiap putaran, jadi satu DbContext per putaran
 builder.Services.AddScoped<MonitorCheckCycle>();
+// * Layanan CRUD monitor, dipakai endpoint API dan halaman admin
 builder.Services.AddScoped<MonitorService>();
 builder.Services.AddScoped<StatusQueries>();
 // * Mendaftarkan scheduler supaya otomatis dijalankan saat aplikasi start

@@ -12,6 +12,8 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <!-- * Akhiran ".id" = terjemahan Indonesia, key harus sama persis dengan SharedResource.resx -->
+  <!-- ! Key yang belum diterjemahkan jatuh ke bahasa Inggris, dan key yang tidak ada di kedua file tampil sebagai nama key-nya -->
   <data name="AppName" xml:space="preserve">
     <value>Uptime Monitor</value>
   </data>
@@ -195,6 +197,7 @@
   <data name="Unit_Milliseconds" xml:space="preserve">
     <value>{0} md</value>
   </data>
+  <!-- * Validation_*: pesan error validasi, placeholder sama dengan versi Inggris -->
   <data name="Validation_Required" xml:space="preserve">
     <value>Kolom ini wajib diisi.</value>
   </data>
