@@ -2,8 +2,10 @@ using UptimeMonitor.Web.Monitoring;
 
 namespace UptimeMonitor.Tests;
 
+// * Menguji aturan bisnis Langkah 2 (kapan down, kapan insiden dibuka/ditutup) dan helper Uptime; murni logika, tanpa database atau HTTP
 public class EndpointMonitorTests
 {
+    // ? Data contoh dibuat sekali dan dipakai bersama: waktu tetap (bukan jam sungguhan) membuat hasil test selalu sama
     private const int Threshold = 3;
     private static readonly DateTimeOffset Start = new(2026, 1, 1, 0, 0, 0, TimeSpan.Zero);
     private static readonly CheckOutcome Success = new(true, 200, 120, null);
@@ -34,6 +36,7 @@ public class EndpointMonitorTests
     }
 
     [Fact]
+    // * Dua gagal (batasnya 3) tetap status Down, tapi insiden belum dibuka
     public void Failures_below_threshold_do_not_open_incident()
     {
         var monitor = CreateMonitor();
@@ -52,6 +55,7 @@ public class EndpointMonitorTests
     {
         var monitor = CreateMonitor();
 
+        // * Lima gagal beruntun: insiden hanya Opened di kegagalan ketiga, sisanya None (tidak dibuka dua kali)
         var changes = Enumerable.Range(0, 5)
             .Select(index => monitor.Register(Failure, Start.AddMinutes(index), Threshold))
             .ToList();
@@ -81,6 +85,7 @@ public class EndpointMonitorTests
     }
 
     [Fact]
+    // ! Aturannya "gagal BERTURUT-TURUT": satu sukses di tengah mengembalikan hitungan ke awal
     public void Success_between_failures_restarts_the_failure_count()
     {
         var monitor = CreateMonitor();
@@ -101,6 +106,7 @@ public class EndpointMonitorTests
         monitor.IntervalSeconds = 60;
         monitor.Register(Success, Start, Threshold);
 
+        // ? Batas tepat diuji: detik ke-59 belum jatuh tempo, detik ke-60 sudah
         Assert.False(monitor.IsDue(Start.AddSeconds(59)));
         Assert.True(monitor.IsDue(Start.AddSeconds(60)));
     }
@@ -115,6 +121,8 @@ public class EndpointMonitorTests
         Assert.Equal(MonitorStatus.Paused, monitor.Status);
     }
 
+    // * [Theory] = satu method dijalankan berulang, sekali per baris [InlineData] (sukses, total, hasil yang diharapkan)
+    // ? Baris-barisnya: tanpa data = null, semua sukses = 100, pembulatan 2 desimal, dan 0 sukses = 0 (bukan null)
     [Theory]
     [InlineData(0, 0, null)]
     [InlineData(10, 10, 100.0)]

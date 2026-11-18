@@ -3,6 +3,8 @@ using UptimeMonitor.Web.Data;
 
 namespace UptimeMonitor.Web.Monitoring;
 
+// * Tiga record di bawah adalah bentuk data khusus untuk tampilan: hanya field yang dibutuhkan status page, bukan entity penuh
+// ? Uptime null = belum ada data pengecekan pada rentang itu
 public record MonitorSummary(
     int Id,
     string Name,
@@ -14,6 +16,7 @@ public record MonitorSummary(
     double? Uptime7Days,
     double? Uptime30Days);
 
+// * MonitorName ikut dibawa supaya daftar insiden bisa menampilkan nama tanpa query tambahan
 public record IncidentSummary(
     int Id,
     string MonitorName,
@@ -21,17 +24,22 @@ public record IncidentSummary(
     DateTimeOffset? ResolvedAt,
     string Cause);
 
+// * Seluruh isi status page; DownCount dihitung saat dibaca, untuk judul seperti "2 dari 5 layanan down"
 public record StatusOverview(IReadOnlyList<MonitorSummary> Monitors, IReadOnlyList<IncidentSummary> Incidents)
 {
     public int DownCount => Monitors.Count(monitor => monitor.Status == MonitorStatus.Down);
 }
 
+// * Helper murni (tanpa database) untuk menghitung persentase uptime, jadi mudah diuji
 public static class Uptime
 {
+    // ! 0 pengecekan menghasilkan null (bukan 0%), karena "belum ada data" berbeda dari "selalu down"
+    // ! Dikali 100.0 (bukan 100) agar pembagian memakai pecahan, kalau semuanya int hasilnya dibulatkan ke bawah
     public static double? Percentage(int successful, int total) =>
         total == 0 ? null : Math.Round(successful * 100.0 / total, 2);
 }
 
+// * Kumpulan query baca untuk status page; tidak mengubah data apa pun
 public class StatusQueries(IDbContextFactory<AppDbContext> dbFactory, TimeProvider time)
 {
     private const int RecentIncidentCount = 10;
@@ -46,6 +54,8 @@ public class StatusQueries(IDbContextFactory<AppDbContext> dbFactory, TimeProvid
 
         var monitors = await db.Monitors.AsNoTracking().OrderBy(monitor => monitor.Name).ToListAsync(cancellationToken);
 
+        // * Satu query untuk semua monitor sekaligus: kelompokkan riwayat 30 hari per monitor, lalu hitung total dan yang sukses untuk 24 jam/7 hari/30 hari
+        // ? Cara ini menghindari satu query per monitor (makin banyak monitor, makin lambat)
         var counts = await db.CheckResults
             .Where(result => result.CheckedAt >= monthAgo)
             .GroupBy(result => result.MonitorId)
@@ -59,10 +69,12 @@ public class StatusQueries(IDbContextFactory<AppDbContext> dbFactory, TimeProvid
                 MonthTotal = group.Count(),
                 MonthUp = group.Count(result => result.IsUp)
             })
+            // * Dictionary: mencari hitungan milik satu monitor jadi lookup langsung berdasarkan Id
             .ToDictionaryAsync(row => row.MonitorId, cancellationToken);
 
         var summaries = monitors.Select(monitor =>
         {
+            // ? Monitor yang belum punya riwayat tidak ada di dictionary, jadi count null dan angkanya dianggap 0
             counts.TryGetValue(monitor.Id, out var count);
             return new MonitorSummary(
                 monitor.Id,
@@ -76,6 +88,7 @@ public class StatusQueries(IDbContextFactory<AppDbContext> dbFactory, TimeProvid
                 Uptime.Percentage(count?.MonthUp ?? 0, count?.MonthTotal ?? 0));
         }).ToList();
 
+        // * Ambil 10 insiden terbaru, lalu Join ke Monitors untuk mendapat nama (tidak ada navigation property, jadi join ditulis manual)
         var incidents = await db.Incidents.AsNoTracking()
             .OrderByDescending(incident => incident.StartedAt)
             .Take(RecentIncidentCount)
@@ -91,6 +104,7 @@ public class StatusQueries(IDbContextFactory<AppDbContext> dbFactory, TimeProvid
                     incident.Cause))
             .ToListAsync(cancellationToken);
 
+        // ! Diurutkan lagi di memori karena urutan hasil Join tidak dijamin sama dengan urutan sebelum Join
         return new StatusOverview(summaries, incidents.OrderByDescending(incident => incident.StartedAt).ToList());
     }
 }

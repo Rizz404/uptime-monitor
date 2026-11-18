@@ -46,6 +46,7 @@ builder.Services.AddHttpClient<EndpointChecker>(client =>
 builder.Services.AddScoped<MonitorCheckCycle>();
 // * Layanan CRUD monitor, dipakai endpoint API dan halaman admin
 builder.Services.AddScoped<MonitorService>();
+// * Query baca untuk status page
 builder.Services.AddScoped<StatusQueries>();
 // * Mendaftarkan scheduler supaya otomatis dijalankan saat aplikasi start
 builder.Services.AddHostedService<MonitorScheduler>();
