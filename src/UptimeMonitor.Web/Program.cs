@@ -9,9 +9,11 @@ using UptimeMonitor.Web.Monitoring;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// * Mengaktifkan komponen Razor (.razor) dengan mode interaktif lewat server (browser berhubungan terus dengan server)
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
+// * Status login diteruskan ke semua komponen, dibutuhkan AuthorizeView dan AuthorizeRouteView
 builder.Services.AddCascadingAuthenticationState();
 // * ResourcesPath = folder tempat file resx bahasa berada
 builder.Services.AddLocalization(options => options.ResourcesPath = "Resources");
@@ -69,12 +71,14 @@ await using (var scope = app.Services.CreateAsyncScope())
     await scope.ServiceProvider.GetRequiredService<AppDbContext>().Database.MigrateAsync();
 }
 
+// * Di luar Development, error ditampilkan lewat halaman /Error (bukan detail teknis), dan HSTS menyuruh browser selalu memakai HTTPS
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Error", createScopeForErrors: true);
     app.UseHsts();
 }
 
+// * Alamat yang tidak ditemukan (404) ditampilkan sebagai halaman /not-found, tapi bukan untuk /api: API cukup mengembalikan kode status
 app.UseWhen(
     context => !context.Request.Path.StartsWithSegments("/api"),
     branch => branch.UseStatusCodePagesWithReExecute("/not-found", createScopeForStatusCodePages: true));
@@ -89,8 +93,10 @@ app.UseRequestLocalization(new RequestLocalizationOptions()
 // ! Urutan middleware penting: Authentication dulu (siapa kamu, dari cookie), baru Authorization (boleh masuk atau tidak)
 app.UseAuthentication();
 app.UseAuthorization();
+// * Antiforgery melindungi form dari pengiriman palsu antarsitus (CSRF); komponen Razor mewajibkannya
 app.UseAntiforgery();
 
+// * Menyajikan isi wwwroot (seperti app.css) dengan versi file dan kompresi
 app.MapStaticAssets();
 // * Menyajikan dokumen OpenAPI di /openapi/v1.json
 // ? Tidak dibungkus IsDevelopment(), jadi tersedia di semua environment
@@ -99,6 +105,7 @@ app.MapOpenApi();
 app.MapMonitorApi();
 // * Mendaftarkan rute /auth/login, /auth/logout, dan /culture/{culture}
 app.MapAuthEndpoints();
+// * Memasang halaman Razor dengan App.razor sebagai dokumen induknya
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
 

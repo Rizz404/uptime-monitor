@@ -1,3 +1,4 @@
+/* * Variabel warna: dibuat sekali di :root lalu dipakai lewat var(--nama), jadi mengganti tema cukup di sini */
 :root {
     color-scheme: light dark;
     --background: #f5f6f8;
@@ -16,6 +17,7 @@
     --radius: 10px;
 }
 
+/* * Mode gelap mengikuti pengaturan sistem pengguna: hanya nilai variabel yang ditimpa, aturan lain tidak berubah */
 @media (prefers-color-scheme: dark) {
     :root {
         --background: #11151b;
@@ -34,6 +36,7 @@
     }
 }
 
+/* ? border-box: lebar elemen sudah termasuk padding dan border, jadi ukuran lebih mudah dihitung */
 * {
     box-sizing: border-box;
 }
@@ -52,6 +55,7 @@ h1 {
     font-size: 1.75rem;
 }
 
+/* ? FocusOnNavigate memindahkan fokus ke h1; garis fokus bawaan dihilangkan karena h1 bukan elemen yang diklik */
 h1:focus {
     outline: none;
 }
@@ -74,6 +78,7 @@ code {
     font-size: 0.9rem;
 }
 
+/* * Header dan menu (MainLayout): flex membuat merek di kiri dan menu di kanan, dan flex-wrap menurunkannya ke baris baru di layar sempit */
 .site-header {
     display: flex;
     flex-wrap: wrap;
@@ -140,6 +145,7 @@ code {
     font-weight: 600;
 }
 
+/* * Isi halaman dibatasi lebar 1100px dan diratakan ke tengah; clamp() membuat jarak tepi menyesuaikan lebar layar */
 .site-main {
     max-width: 1100px;
     margin: 0 auto;
@@ -435,6 +441,7 @@ input.invalid {
     fill: var(--down);
 }
 
+/* * Panel error Blazor di MainLayout: tersembunyi (display: none), dan Blazor yang menampilkannya saat ada error tak tertangani */
 #blazor-error-ui {
     display: none;
     position: fixed;

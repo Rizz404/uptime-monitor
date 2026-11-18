@@ -1,10 +1,14 @@
-﻿<Router AppAssembly="typeof(Program).Assembly" NotFoundPage="typeof(Pages.NotFound)">
+﻿@* * Router mencari semua halaman ber-@page di assembly ini, lalu mencocokkannya dengan alamat yang dibuka *@
+<Router AppAssembly="typeof(Program).Assembly" NotFoundPage="typeof(Pages.NotFound)">
+    @* ? Context="routeData" = nama variabel untuk data rute yang cocok *@
     <Found Context="routeData">
+        @* * AuthorizeRouteView menghormati [Authorize] di halaman: yang belum login ditampilkan RedirectToLogin, dan halaman memakai MainLayout *@
         <AuthorizeRouteView RouteData="routeData" DefaultLayout="typeof(Layout.MainLayout)">
             <NotAuthorized>
                 <RedirectToLogin />
             </NotAuthorized>
         </AuthorizeRouteView>
+        @* ? Setelah pindah halaman, fokus keyboard dan pembaca layar dipindah ke judul h1 (aksesibilitas) *@
         <FocusOnNavigate RouteData="routeData" Selector="h1" />
     </Found>
 </Router>
