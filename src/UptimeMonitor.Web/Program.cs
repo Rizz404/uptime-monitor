@@ -29,6 +29,8 @@ builder.Services.AddValidation();
 builder.Services.ConfigureHttpJsonOptions(options =>
     options.SerializerOptions.Converters.Add(new JsonStringEnumConverter()));
 
+// * Mendaftarkan AppDbContext ke DI; "factory" dipilih karena komponen Blazor Server hidup lama, jadi tiap operasi membuat DbContext sendiri
+// ! Blok ini harus ada sebelum "dotnet ef migrations add": tool EF mencari AppDbContext lewat Program.cs
 builder.Services.AddDbContextFactory<AppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("Default")));
 
