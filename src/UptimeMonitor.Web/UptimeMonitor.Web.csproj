@@ -1,18 +1,26 @@
+<!-- * Sdk.Web = SDK untuk ASP.NET Core, otomatis menambah referensi framework web (beda dari Microsoft.NET.Sdk biasa) -->
 <Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
+    <!-- ! net10.0 = versi .NET target, semua paket NuGet di bawah harus cocok (10.0.x) -->
     <TargetFramework>net10.0</TargetFramework>
+    <!-- ? Nullable enable: compiler memperingatkan potensi null, jadi "string" dan "string?" artinya beda -->
     <Nullable>enable</Nullable>
+    <!-- * ImplicitUsings: using umum (System, System.Linq, dst.) ditambahkan otomatis, tidak perlu ditulis di tiap file -->
     <ImplicitUsings>enable</ImplicitUsings>
+    <!-- ? NavigateTo tidak lagi melempar exception saat render statis (SSR), perilaku baru di .NET 10 -->
     <BlazorDisableThrowNavigationException>true</BlazorDisableThrowNavigationException>
   </PropertyGroup>
 
   <ItemGroup>
+    <!-- * Membuat dokumen OpenAPI (/openapi/v1.json) dari endpoint yang terdaftar -->
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.15" />
+    <!-- ! PrivateAssets=all: paket ini hanya untuk tooling "dotnet ef", tidak diteruskan ke project yang mereferensikan -->
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.15">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
+    <!-- * Provider EF Core untuk SQL Server, yang dipakai UseSqlServer(...) -->
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="10.0.15" />
   </ItemGroup>
 
