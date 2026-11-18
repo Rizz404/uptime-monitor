@@ -34,18 +34,25 @@ builder.Services.ConfigureHttpJsonOptions(options =>
 builder.Services.AddDbContextFactory<AppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("Default")));
 
+// * Mengisi MonitoringOptions dari section "Monitoring" di appsettings.json
 builder.Services.Configure<MonitoringOptions>(builder.Configuration.GetSection("Monitoring"));
 builder.Services.Configure<AdminOptions>(builder.Configuration.GetSection("Admin"));
+// * Jam sungguhan untuk aplikasi; test menggantinya dengan jam palsu
 builder.Services.AddSingleton(TimeProvider.System);
+// * HttpClient untuk EndpointChecker dikelola factory (koneksi dipakai ulang), dan User-Agent membuat request kita dikenali server tujuan
 builder.Services.AddHttpClient<EndpointChecker>(client =>
     client.DefaultRequestHeaders.UserAgent.ParseAdd("UptimeMonitor/1.0"));
+// ? Scoped = satu instance per scope; scheduler membuat scope baru tiap putaran, jadi satu DbContext per putaran
 builder.Services.AddScoped<MonitorCheckCycle>();
 builder.Services.AddScoped<MonitorService>();
 builder.Services.AddScoped<StatusQueries>();
+// * Mendaftarkan scheduler supaya otomatis dijalankan saat aplikasi start
 builder.Services.AddHostedService<MonitorScheduler>();
 
 var app = builder.Build();
 
+// * Terapkan migration saat start: database dan tabelnya dibuat otomatis bila belum ada, jadi "dotnet ef database update" tidak wajib
+// ? Perlu scope manual karena AppDbContext terdaftar scoped, sedangkan kode ini berjalan di luar request
 await using (var scope = app.Services.CreateAsyncScope())
 {
     await scope.ServiceProvider.GetRequiredService<AppDbContext>().Database.MigrateAsync();
