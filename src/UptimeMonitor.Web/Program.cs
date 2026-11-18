@@ -29,8 +29,11 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
 // * Mengaktifkan aturan akses, misalnya RequireAuthorization() dan [Authorize]
 builder.Services.AddAuthorization();
 
+// * Membuat dokumen OpenAPI yang menggambarkan semua endpoint
 builder.Services.AddOpenApi();
+// * Mengaktifkan atribut validasi (seperti di MonitorInput) pada endpoint API, jadi input tidak valid otomatis dijawab 400
 builder.Services.AddValidation();
+// * Enum di JSON tampil sebagai teks ("Up", "Down"), bukan angka (0, 1)
 builder.Services.ConfigureHttpJsonOptions(options =>
     options.SerializerOptions.Converters.Add(new JsonStringEnumConverter()));
 
@@ -89,7 +92,10 @@ app.UseAuthorization();
 app.UseAntiforgery();
 
 app.MapStaticAssets();
+// * Menyajikan dokumen OpenAPI di /openapi/v1.json
+// ? Tidak dibungkus IsDevelopment(), jadi tersedia di semua environment
 app.MapOpenApi();
+// * Mendaftarkan /api/status dan semua rute /api/monitors
 app.MapMonitorApi();
 // * Mendaftarkan rute /auth/login, /auth/logout, dan /culture/{culture}
 app.MapAuthEndpoints();
