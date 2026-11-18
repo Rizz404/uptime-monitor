@@ -13,15 +13,20 @@ builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
 builder.Services.AddCascadingAuthenticationState();
+// * ResourcesPath = folder tempat file resx bahasa berada
 builder.Services.AddLocalization(options => options.ResourcesPath = "Resources");
 
+// * Login berbasis cookie: setelah SignInAsync, browser membawa cookie itu di tiap request
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>
     {
+        // * Pengguna yang belum login diarahkan ke sini
         options.LoginPath = "/login";
+        // * Login berlaku 8 jam; SlidingExpiration memperpanjangnya selama pengguna masih aktif
         options.ExpireTimeSpan = TimeSpan.FromHours(8);
         options.SlidingExpiration = true;
     });
+// * Mengaktifkan aturan akses, misalnya RequireAuthorization() dan [Authorize]
 builder.Services.AddAuthorization();
 
 builder.Services.AddOpenApi();
@@ -36,6 +41,7 @@ builder.Services.AddDbContextFactory<AppDbContext>(options =>
 
 // * Mengisi MonitoringOptions dari section "Monitoring" di appsettings.json
 builder.Services.Configure<MonitoringOptions>(builder.Configuration.GetSection("Monitoring"));
+// * Mengisi AdminOptions dari section "Admin"
 builder.Services.Configure<AdminOptions>(builder.Configuration.GetSection("Admin"));
 // * Jam sungguhan untuk aplikasi; test menggantinya dengan jam palsu
 builder.Services.AddSingleton(TimeProvider.System);
@@ -71,11 +77,13 @@ app.UseWhen(
     branch => branch.UseStatusCodePagesWithReExecute("/not-found", createScopeForStatusCodePages: true));
 app.UseHttpsRedirection();
 
+// * Menentukan bahasa tiap request (dari cookie yang ditulis /culture/{culture}), dengan "en" sebagai default
 app.UseRequestLocalization(new RequestLocalizationOptions()
     .SetDefaultCulture(SupportedCultures.Default)
     .AddSupportedCultures(SupportedCultures.All)
     .AddSupportedUICultures(SupportedCultures.All));
 
+// ! Urutan middleware penting: Authentication dulu (siapa kamu, dari cookie), baru Authorization (boleh masuk atau tidak)
 app.UseAuthentication();
 app.UseAuthorization();
 app.UseAntiforgery();
@@ -83,6 +91,7 @@ app.UseAntiforgery();
 app.MapStaticAssets();
 app.MapOpenApi();
 app.MapMonitorApi();
+// * Mendaftarkan rute /auth/login, /auth/logout, dan /culture/{culture}
 app.MapAuthEndpoints();
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
