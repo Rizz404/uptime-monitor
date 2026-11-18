@@ -8,8 +8,11 @@ using UptimeMonitor.Web.Monitoring;
 
 namespace UptimeMonitor.Tests;
 
+// * Menguji aplikasi secara utuh (API, login, database, siklus pengecekan) lewat AppFactory
+// ! IClassFixture: satu aplikasi dan satu database dipakai bersama semua test di class ini, jadi tiap test memakai nama monitor sendiri agar tidak saling mengganggu
 public class IntegrationTests(AppFactory factory) : IClassFixture<AppFactory>
 {
+    // * Skenario lengkap: gagal 3 kali membuka insiden, lalu satu sukses menutupnya
     [Fact]
     public async Task Check_cycle_opens_incident_after_threshold_and_resolves_it_on_recovery()
     {
@@ -19,14 +22,17 @@ public class IntegrationTests(AppFactory factory) : IClassFixture<AppFactory>
         await RunCycleAsync();
         await RunCycleAsync();
 
+        // * Dua gagal, belum mencapai batas 3, jadi belum ada insiden
         Assert.Empty(await IncidentsAsync(monitor.Id));
 
         await RunCycleAsync();
 
+        // * Gagal ketiga: insiden dibuka dengan penyebab dari pesan error checker
         var opened = Assert.Single(await IncidentsAsync(monitor.Id));
         Assert.Null(opened.ResolvedAt);
         Assert.Equal("Expected status 200 but received 500", opened.Cause);
 
+        // * Endpoint "pulih": satu sukses menutup insiden yang sama (bukan membuat yang baru)
         factory.Http.RespondWith(HttpStatusCode.OK);
         await RunCycleAsync();
 
@@ -39,6 +45,7 @@ public class IntegrationTests(AppFactory factory) : IClassFixture<AppFactory>
         Assert.Equal(4, await CheckCountAsync(monitor.Id));
     }
 
+    // * advance: false = jam tidak dimajukan, jadi putaran kedua melihat monitor aktif belum jatuh tempo, dan monitor yang dijeda memang tidak pernah dicek
     [Fact]
     public async Task Check_cycle_skips_monitors_that_are_paused_or_not_yet_due()
     {
@@ -58,6 +65,7 @@ public class IntegrationTests(AppFactory factory) : IClassFixture<AppFactory>
         Assert.Equal(0, await CheckCountAsync(paused.Id));
     }
 
+    // * Client tanpa login: API monitor harus menjawab 401
     [Fact]
     public async Task Monitor_api_rejects_anonymous_requests()
     {
@@ -68,6 +76,7 @@ public class IntegrationTests(AppFactory factory) : IClassFixture<AppFactory>
         Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
     }
 
+    // * Password salah: dialihkan balik ke login dan tetap tidak punya akses ke API
     [Fact]
     public async Task Login_with_wrong_password_redirects_back_to_login()
     {
@@ -80,6 +89,7 @@ public class IntegrationTests(AppFactory factory) : IClassFixture<AppFactory>
         Assert.Equal(HttpStatusCode.Unauthorized, (await client.GetAsync("/api/monitors")).StatusCode);
     }
 
+    // * Tiga field sengaja dibuat salah (nama kosong, URL ftp, interval di bawah 30); respons 400 harus menyebut ketiganya
     [Fact]
     public async Task Monitor_api_validates_input()
     {
@@ -99,6 +109,7 @@ public class IntegrationTests(AppFactory factory) : IClassFixture<AppFactory>
         Assert.Contains("IntervalSeconds", body);
     }
 
+    // * Admin membuat monitor, lalu client anonim melihatnya di /api/status; status "Pending" tampil sebagai teks berkat converter enum
     [Fact]
     public async Task Created_monitor_appears_on_public_status_endpoint()
     {
@@ -119,6 +130,7 @@ public class IntegrationTests(AppFactory factory) : IClassFixture<AppFactory>
         Assert.Contains("\"status\":\"Pending\"", body);
     }
 
+    // * Jeda, ubah, dan hapus lewat API; hasilnya diperiksa lewat database (FindMonitorAsync), bukan hanya dari kode respons
     [Fact]
     public async Task Admin_can_pause_update_and_delete_a_monitor()
     {
@@ -142,6 +154,7 @@ public class IntegrationTests(AppFactory factory) : IClassFixture<AppFactory>
         Assert.Equal(HttpStatusCode.NotFound, (await client.GetAsync($"/api/monitors/{monitor.Id}")).StatusCode);
     }
 
+    // ? Header Accept-Language dibaca middleware localization bila tidak ada cookie bahasa, jadi "id" menghasilkan teks Indonesia
     [Fact]
     public async Task Status_page_is_rendered_in_the_requested_language()
     {
@@ -155,6 +168,7 @@ public class IntegrationTests(AppFactory factory) : IClassFixture<AppFactory>
         Assert.Contains("Status sistem", indonesian);
     }
 
+    // * Halaman /admin tanpa login dialihkan ke /login
     [Fact]
     public async Task Dashboard_redirects_anonymous_visitors_to_login()
     {
@@ -166,6 +180,8 @@ public class IntegrationTests(AppFactory factory) : IClassFixture<AppFactory>
         Assert.Contains("/login", response.Headers.Location?.OriginalString);
     }
 
+    // * Helper di bawah memakai scope baru tiap kali (service bersifat scoped) dan menyentuh database langsung
+    // ? Interval 30 detik sama dengan lompatan jam di RunCycleAsync, jadi monitor ini tepat jatuh tempo lagi di putaran berikutnya
     private async Task<EndpointMonitor> CreateMonitorAsync(string name)
     {
         await using var scope = factory.Services.CreateAsyncScope();
@@ -177,6 +193,7 @@ public class IntegrationTests(AppFactory factory) : IClassFixture<AppFactory>
         });
     }
 
+    // * Menjalankan satu putaran seperti scheduler, lalu (bila advance) memajukan jam palsu 30 detik
     private async Task RunCycleAsync(bool advance = true)
     {
         await using var scope = factory.Services.CreateAsyncScope();
