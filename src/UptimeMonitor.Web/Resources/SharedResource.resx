@@ -12,6 +12,7 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <!-- * Resx = kamus teks: "name" adalah key yang dipanggil kode, "value" adalah teks yang tampil. File tanpa kode bahasa ini = bahasa Inggris (default) -->
   <data name="AppName" xml:space="preserve">
     <value>Uptime Monitor</value>
   </data>
@@ -195,6 +196,7 @@
   <data name="Unit_Milliseconds" xml:space="preserve">
     <value>{0} ms</value>
   </data>
+  <!-- * Validation_*: pesan error validasi. {0} = nama field, {1} dan {2} = batas (min/max), diisi seperti string.Format -->
   <data name="Validation_Required" xml:space="preserve">
     <value>This field is required.</value>
   </data>

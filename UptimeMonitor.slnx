@@ -1,4 +1,6 @@
+<!-- * .slnx = format solution baru berbasis XML (pengganti .sln), isinya cuma daftar project -->
 <Solution>
+  <!-- ? Folder ini hanya pengelompokan di Solution Explorer IDE, bukan folder asli di disk -->
   <Folder Name="/src/">
     <Project Path="src/UptimeMonitor.Web/UptimeMonitor.Web.csproj" />
   </Folder>

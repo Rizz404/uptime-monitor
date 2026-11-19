@@ -1,26 +1,37 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+﻿<!-- * Project test: SDK biasa (bukan Web), karena yang dijalankan hanya kode test -->
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <!-- * IsPackable=false: project test tidak pernah dibuat jadi paket NuGet -->
     <IsPackable>false</IsPackable>
   </PropertyGroup>
 
   <ItemGroup>
+    <!-- * coverlet.collector: mengukur code coverage saat "dotnet test" -->
     <PackageReference Include="coverlet.collector" Version="6.0.4" />
+    <!-- * Mvc.Testing: menyediakan WebApplicationFactory untuk menyalakan aplikasi asli di test
+    integrasi -->
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="10.0.15" />
+    <!-- * FakeTimeProvider: waktu palsu, supaya test tidak bergantung pada jam sungguhan -->
     <PackageReference Include="Microsoft.Extensions.TimeProvider.Testing" Version="10.11.0" />
+    <!-- ! Test.Sdk wajib ada, tanpanya "dotnet test" tidak menemukan test -->
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
+    <!-- * xunit: framework test-nya ([Fact], Assert) -->
     <PackageReference Include="xunit" Version="2.9.3" />
+    <!-- * Adapter agar test xunit terbaca oleh "dotnet test" dan Test Explorer -->
     <PackageReference Include="xunit.runner.visualstudio" Version="3.1.4" />
   </ItemGroup>
 
   <ItemGroup>
+    <!-- * Global using: tidak perlu menulis "using Xunit;" di tiap file test -->
     <Using Include="Xunit" />
   </ItemGroup>
 
   <ItemGroup>
+    <!-- * Test mereferensikan project Web supaya bisa memanggil kodenya -->
     <ProjectReference Include="..\..\src\UptimeMonitor.Web\UptimeMonitor.Web.csproj" />
   </ItemGroup>
 

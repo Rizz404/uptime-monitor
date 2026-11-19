@@ -1,16 +1,21 @@
-﻿@inherits LayoutComponentBase
+﻿@* * Layout = bingkai yang membungkus semua halaman: header dan menu tetap di sini, isi halaman masuk di @Body *@
+@inherits LayoutComponentBase
 @inject NavigationManager Navigation
 
+@* ! data-enhance-nav="false": link bahasa dan form logout harus request penuh ke server, bukan ditangani navigasi Blazor *@
 <header class="site-header" data-enhance-nav="false">
     <a class="brand" href="/">
         <span class="brand-mark" aria-hidden="true"></span>
         @L["AppName"]
     </a>
     <nav class="site-nav">
+        @* ? Match=All: "/" hanya aktif di alamat persis "/", kalau tidak semua halaman ikut dianggap aktif *@
         <NavLink href="/" Match="NavLinkMatch.All">@L["Nav_Status"]</NavLink>
+        @* * AuthorizeView menampilkan isi berbeda menurut status login, dan membutuhkan AddCascadingAuthenticationState di Program.cs *@
         <AuthorizeView>
             <Authorized>
                 <NavLink href="/admin">@L["Nav_Dashboard"]</NavLink>
+                @* ? Logout memakai form POST (bukan link), karena aksinya mengubah keadaan *@
                 <form method="post" action="/auth/logout">
                     <button type="submit" class="link-button">@L["Nav_Logout"]</button>
                 </form>
@@ -27,9 +32,11 @@
 </header>
 
 <main class="site-main">
+    @* * Tempat isi halaman yang sedang dibuka *@
     @Body
 </main>
 
+@* * Disembunyikan lewat CSS dan baru ditampilkan Blazor bila terjadi error yang tidak tertangani *@
 <div id="blazor-error-ui" data-nosnippet>
     @L["Error_Unhandled"]
     <a href="." class="reload">@L["Error_Reload"]</a>
@@ -37,12 +44,14 @@
 </div>
 
 @code {
+    // * Alamat halaman sekarang ikut dikirim sebagai returnUrl, supaya setelah ganti bahasa pengguna kembali ke halaman yang sama
     private string CultureUrl(string culture)
     {
         var returnUrl = "/" + Navigation.ToBaseRelativePath(Navigation.Uri);
         return $"/culture/{culture}?returnUrl={Uri.EscapeDataString(returnUrl)}";
     }
 
+    // * Bahasa yang sedang dipakai diberi class "active" agar tampil menonjol
     private static string CultureClass(string culture) =>
         CultureInfo.CurrentUICulture.TwoLetterISOLanguageName == culture ? "active" : string.Empty;
 }

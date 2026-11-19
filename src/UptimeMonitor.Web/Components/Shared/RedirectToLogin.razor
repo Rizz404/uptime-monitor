@@ -1,9 +1,13 @@
+@* * Komponen tanpa tampilan: begitu muncul, langsung mengalihkan pengguna ke halaman login *@
 @inject NavigationManager Navigation
 
 @code {
+    // * OnInitialized dijalankan sekali saat komponen dibuat
     protected override void OnInitialized()
     {
+        // ? Alamat tujuan semula dikirim sebagai returnUrl, supaya setelah login pengguna kembali ke sana
         var returnUrl = "/" + Navigation.ToBaseRelativePath(Navigation.Uri);
+        // ? forceLoad: true = muat ulang halaman penuh, karena /login diproses di server
         Navigation.NavigateTo($"/login?returnUrl={Uri.EscapeDataString(returnUrl)}", forceLoad: true);
     }
 }

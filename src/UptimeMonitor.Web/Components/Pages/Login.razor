@@ -2,17 +2,23 @@
 
 <PageTitle>@L["Login_Title"] · @L["AppName"]</PageTitle>
 
+@* * Memakai form HTML biasa (bukan EditForm Blazor): login harus menulis cookie lewat respons HTTP, dan itu dikerjakan endpoint /auth/login dari Langkah 8 *@
 <form method="post" action="/auth/login" class="panel login-form">
+    @* ! Token antiforgery wajib ada karena Program.cs memakai UseAntiforgery; tanpanya kiriman form ditolak *@
     <AntiforgeryToken />
+    @* ? Field tersembunyi ini meneruskan alamat tujuan semula supaya endpoint bisa mengarahkan pengguna kembali *@
     <input type="hidden" name="returnUrl" value="@ReturnUrl" />
 
     <h1>@L["Login_Title"]</h1>
 
+    @* * Failed bernilai true saat endpoint mengalihkan kembali ke /login?failed=true *@
     @if (Failed)
     {
         <p class="banner banner-down">@L["Login_Failed"]</p>
     }
 
+    @* ? Atribut name harus sama dengan nama parameter [FromForm] di endpoint (username, password) *@
+    @* ? autocomplete membantu pengelola password di browser, required dicek browser sebelum form terkirim *@
     <label>
         @L["Login_Username"]
         <input type="text" name="username" autocomplete="username" required autofocus />
@@ -25,6 +31,7 @@
 </form>
 
 @code {
+    // * [SupplyParameterFromQuery]: properti diisi dari query string di alamat, misalnya /login?failed=true&returnUrl=/admin
     [SupplyParameterFromQuery]
     private string? ReturnUrl { get; set; }
 
