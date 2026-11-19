@@ -1,6 +1,7 @@
 using System.Diagnostics;
+using UptimeMonitor.Web.Monitoring.Entities;
 
-namespace UptimeMonitor.Web.Monitoring;
+namespace UptimeMonitor.Web.Monitoring.Checking;
 
 // * Tugasnya satu: mengecek satu URL lewat HTTP GET lalu mengembalikan CheckOutcome. Tidak tahu soal database
 // ? HttpClient disuntik dari luar (bukan dibuat di sini), jadi di test bisa diganti HTTP palsu

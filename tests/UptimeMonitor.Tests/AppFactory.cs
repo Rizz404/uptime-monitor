@@ -8,7 +8,7 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Time.Testing;
 using UptimeMonitor.Web.Data;
-using UptimeMonitor.Web.Monitoring;
+using UptimeMonitor.Web.Monitoring.Checking;
 
 namespace UptimeMonitor.Tests;
 

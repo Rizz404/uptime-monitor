@@ -1,4 +1,4 @@
-namespace UptimeMonitor.Web.Monitoring;
+namespace UptimeMonitor.Web.Monitoring.Checking;
 
 // * Setting yang bisa diubah tanpa menyentuh kode: nilainya dibaca dari section "Monitoring" di appsettings.json
 // ? Nilai di bawah adalah default bila section/key itu tidak ada di appsettings

@@ -5,7 +5,9 @@ using UptimeMonitor.Web.Api;
 using UptimeMonitor.Web.Auth;
 using UptimeMonitor.Web.Components;
 using UptimeMonitor.Web.Data;
-using UptimeMonitor.Web.Monitoring;
+using UptimeMonitor.Web.Monitoring.Checking;
+using UptimeMonitor.Web.Monitoring.Queries;
+using UptimeMonitor.Web.Monitoring.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 

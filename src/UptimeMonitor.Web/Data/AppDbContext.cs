@@ -1,5 +1,5 @@
 using Microsoft.EntityFrameworkCore;
-using UptimeMonitor.Web.Monitoring;
+using UptimeMonitor.Web.Monitoring.Entities;
 
 namespace UptimeMonitor.Web.Data;
 

@@ -1,6 +1,6 @@
 using Microsoft.Extensions.Options;
 
-namespace UptimeMonitor.Web.Monitoring;
+namespace UptimeMonitor.Web.Monitoring.Checking;
 
 // * BackgroundService = tugas yang otomatis jalan sepanjang aplikasi hidup, tanpa perlu dipanggil dari halaman/API
 // ? IServiceScopeFactory dipakai karena scheduler berumur panjang, sedangkan MonitorCheckCycle (dan DbContext-nya) harus dibuat baru tiap putaran

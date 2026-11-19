@@ -1,4 +1,5 @@
-namespace UptimeMonitor.Web.Monitoring;
+
+namespace UptimeMonitor.Web.Monitoring.Entities;
 
 // * Inti aplikasi: satu URL yang dipantau, beserta aturan kapan ia dianggap down.
 public class EndpointMonitor
@@ -66,21 +67,4 @@ public class EndpointMonitor
         HasOpenIncident = true;
         return IncidentChange.Opened;
     }
-}
-
-// ? Pending = belum pernah dicek, Paused = dijeda pengguna (keduanya bukan Up/Down)
-public enum MonitorStatus
-{
-    Pending,
-    Up,
-    Down,
-    Paused
-}
-
-// * Hasil Register(): memberi tahu pemanggil apa yang harus dilakukan (buka/tutup insiden di database)
-public enum IncidentChange
-{
-    None,
-    Opened,
-    Resolved
 }

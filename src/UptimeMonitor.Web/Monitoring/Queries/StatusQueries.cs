@@ -1,43 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using UptimeMonitor.Web.Data;
 
-namespace UptimeMonitor.Web.Monitoring;
-
-// * Tiga record di bawah adalah bentuk data khusus untuk tampilan: hanya field yang dibutuhkan status page, bukan entity penuh
-// ? Uptime null = belum ada data pengecekan pada rentang itu
-public record MonitorSummary(
-    int Id,
-    string Name,
-    string Url,
-    MonitorStatus Status,
-    DateTimeOffset? LastCheckedAt,
-    int? LastLatencyMs,
-    double? Uptime24Hours,
-    double? Uptime7Days,
-    double? Uptime30Days);
-
-// * MonitorName ikut dibawa supaya daftar insiden bisa menampilkan nama tanpa query tambahan
-public record IncidentSummary(
-    int Id,
-    string MonitorName,
-    DateTimeOffset StartedAt,
-    DateTimeOffset? ResolvedAt,
-    string Cause);
-
-// * Seluruh isi status page; DownCount dihitung saat dibaca, untuk judul seperti "2 dari 5 layanan down"
-public record StatusOverview(IReadOnlyList<MonitorSummary> Monitors, IReadOnlyList<IncidentSummary> Incidents)
-{
-    public int DownCount => Monitors.Count(monitor => monitor.Status == MonitorStatus.Down);
-}
-
-// * Helper murni (tanpa database) untuk menghitung persentase uptime, jadi mudah diuji
-public static class Uptime
-{
-    // ! 0 pengecekan menghasilkan null (bukan 0%), karena "belum ada data" berbeda dari "selalu down"
-    // ! Dikali 100.0 (bukan 100) agar pembagian memakai pecahan, kalau semuanya int hasilnya dibulatkan ke bawah
-    public static double? Percentage(int successful, int total) =>
-        total == 0 ? null : Math.Round(successful * 100.0 / total, 2);
-}
+namespace UptimeMonitor.Web.Monitoring.Queries;
 
 // * Kumpulan query baca untuk status page; tidak mengubah data apa pun
 public class StatusQueries(IDbContextFactory<AppDbContext> dbFactory, TimeProvider time)

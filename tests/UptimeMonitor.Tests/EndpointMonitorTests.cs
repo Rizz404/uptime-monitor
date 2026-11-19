@@ -1,4 +1,5 @@
-using UptimeMonitor.Web.Monitoring;
+using UptimeMonitor.Web.Monitoring.Entities;
+using UptimeMonitor.Web.Monitoring.Queries;
 
 namespace UptimeMonitor.Tests;
 

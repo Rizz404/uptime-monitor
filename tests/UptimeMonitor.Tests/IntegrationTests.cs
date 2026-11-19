@@ -4,7 +4,9 @@ using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using UptimeMonitor.Web.Data;
-using UptimeMonitor.Web.Monitoring;
+using UptimeMonitor.Web.Monitoring.Checking;
+using UptimeMonitor.Web.Monitoring.Entities;
+using UptimeMonitor.Web.Monitoring.Services;
 
 namespace UptimeMonitor.Tests;
 

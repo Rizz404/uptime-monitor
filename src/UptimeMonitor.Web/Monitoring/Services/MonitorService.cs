@@ -1,7 +1,8 @@
 using Microsoft.EntityFrameworkCore;
 using UptimeMonitor.Web.Data;
+using UptimeMonitor.Web.Monitoring.Entities;
 
-namespace UptimeMonitor.Web.Monitoring;
+namespace UptimeMonitor.Web.Monitoring.Services;
 
 // * Semua operasi atas monitor (daftar, tambah, ubah, jeda, hapus, riwayat), dipakai oleh API dan halaman admin
 // ? Tiap method membuat DbContext sendiri lewat factory, dibuang di akhir method (alasannya ada di Program.cs)

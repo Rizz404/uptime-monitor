@@ -1,7 +1,8 @@
 using System.ComponentModel.DataAnnotations;
 using UptimeMonitor.Web.Localization;
+using UptimeMonitor.Web.Monitoring.Entities;
 
-namespace UptimeMonitor.Web.Monitoring;
+namespace UptimeMonitor.Web.Monitoring.Services;
 
 // * Bentuk data dari form/API beserta aturan validasinya; sengaja dipisah dari EndpointMonitor agar input pengguna tidak langsung menyentuh entity
 public class MonitorInput

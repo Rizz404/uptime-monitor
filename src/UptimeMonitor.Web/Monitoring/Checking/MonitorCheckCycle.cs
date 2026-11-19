@@ -1,8 +1,9 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using UptimeMonitor.Web.Data;
+using UptimeMonitor.Web.Monitoring.Entities;
 
-namespace UptimeMonitor.Web.Monitoring;
+namespace UptimeMonitor.Web.Monitoring.Checking;
 
 // * Satu putaran kerja: ambil monitor jatuh tempo, cek semuanya, simpan hasil, buka/tutup insiden. Scheduler yang memanggilnya berulang
 // ? TimeProvider (bukan DateTime.Now) supaya test bisa memakai waktu palsu; IOptions membungkus MonitoringOptions

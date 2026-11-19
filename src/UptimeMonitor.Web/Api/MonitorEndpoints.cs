@@ -1,5 +1,7 @@
 using Microsoft.AspNetCore.Http.HttpResults;
-using UptimeMonitor.Web.Monitoring;
+using UptimeMonitor.Web.Monitoring.Entities;
+using UptimeMonitor.Web.Monitoring.Queries;
+using UptimeMonitor.Web.Monitoring.Services;
 
 namespace UptimeMonitor.Web.Api;
 

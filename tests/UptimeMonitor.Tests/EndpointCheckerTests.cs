@@ -1,5 +1,6 @@
 using System.Net;
-using UptimeMonitor.Web.Monitoring;
+using UptimeMonitor.Web.Monitoring.Checking;
+using UptimeMonitor.Web.Monitoring.Entities;
 
 namespace UptimeMonitor.Tests;
 
