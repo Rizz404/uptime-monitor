@@ -1,5 +1,6 @@
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.EntityFrameworkCore;
 using UptimeMonitor.Web.Api;
 using UptimeMonitor.Web.Auth;
@@ -32,6 +33,13 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
     });
 // * Mengaktifkan aturan akses, misalnya RequireAuthorization() dan [Authorize]
 builder.Services.AddAuthorization();
+
+// * Kunci Data Protection mengenkripsi cookie login; bila KeysPath diisi (di Docker), kunci disimpan ke folder itu supaya login tetap berlaku setelah container dibuat ulang
+var keysPath = builder.Configuration["DataProtection:KeysPath"];
+if (!string.IsNullOrEmpty(keysPath))
+{
+    builder.Services.AddDataProtection().PersistKeysToFileSystem(new DirectoryInfo(keysPath));
+}
 
 // * Membuat dokumen OpenAPI yang menggambarkan semua endpoint
 builder.Services.AddOpenApi();

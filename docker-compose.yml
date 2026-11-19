@@ -1,0 +1,43 @@
+services:
+  db:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    restart: unless-stopped
+    environment:
+      ACCEPT_EULA: "Y"
+      # * Edisi Express gratis untuk production (batas 10 GB per database)
+      MSSQL_PID: Express
+      MSSQL_SA_PASSWORD: ${MSSQL_SA_PASSWORD:?isi MSSQL_SA_PASSWORD di .env}
+      # * Membatasi RAM SQL Server supaya tidak menghabiskan memori server
+      MSSQL_MEMORY_LIMIT_MB: "2048"
+    volumes:
+      - mssql-data:/var/opt/mssql
+    # ! Tidak ada "ports": database hanya bisa diakses container lain di network ini, tidak terbuka ke internet
+    healthcheck:
+      test: ["CMD-SHELL", "/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P \"$$MSSQL_SA_PASSWORD\" -C -Q 'SELECT 1' -b -o /dev/null"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+  app:
+    build: .
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      ConnectionStrings__Default: "Server=db;Database=UptimeMonitor;User Id=sa;Password=${MSSQL_SA_PASSWORD};TrustServerCertificate=True"
+      Admin__Username: ${ADMIN_USERNAME:?isi ADMIN_USERNAME di .env}
+      Admin__Password: ${ADMIN_PASSWORD:?isi ADMIN_PASSWORD di .env}
+      # * Membaca header X-Forwarded-Proto/For dari nginx Plesk, jadi aplikasi tahu request aslinya HTTPS
+      ASPNETCORE_FORWARDEDHEADERS_ENABLED: "true"
+      DataProtection__KeysPath: /app/keys
+    volumes:
+      - dp-keys:/app/keys
+    # ! Hanya listen di 127.0.0.1: yang bisa masuk cuma nginx di server yang sama, bukan internet langsung
+    ports:
+      - "127.0.0.1:${APP_PORT:-5083}:8080"
+
+volumes:
+  mssql-data:
+  dp-keys:
